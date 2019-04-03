@@ -47,8 +47,11 @@ MonoBehaviour:
   countdownText: {fileID: 0}
   pausedPanel: {fileID: 0}
   gameOverPanel: {fileID: 0}
+  tint: {fileID: 0}
   finalScoreText: {fileID: 0}
   topScoreText: {fileID: 0}
   scoreText: {fileID: 0}
   liveText: {fileID: 0}
   maxPlayerLives: 3
+  cameraShakeDuration: 0.4
+  cameraShakeAmount: 0.1

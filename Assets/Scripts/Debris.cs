@@ -12,8 +12,13 @@ public class Debris : MonoBehaviour
     private float minArc;
     [SerializeField]
     private float maxArc;
+    [SerializeField]
+    private ParticleSystem debrisParticle;
+    [SerializeField]
+    private ParticleSystem explode;
     private float speed;
     private float arc;
+    private bool canMove;
 
     Earth target;
     GameController gc;
@@ -21,6 +26,7 @@ public class Debris : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        canMove = true;
         speed = Random.Range(minSpeed, maxSpeed);
         arc = Random.Range(minArc, maxArc);
         target = FindObjectOfType<Earth>();
@@ -30,11 +36,28 @@ public class Debris : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed * Time.deltaTime);
-        transform.RotateAround(target.transform.position, Vector3.forward, arc * Time.deltaTime);
+        if (canMove)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed * Time.deltaTime);
+            transform.RotateAround(target.transform.position, Vector3.forward, arc * Time.deltaTime);
+        }
+
         if (gc.GetGameOver)
         {
             Destroy(gameObject);
         }
+    }
+
+    public void Explode()
+    {
+        canMove = false;
+        debrisParticle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+        explode.Play();
+        Destroy(gameObject, explode.main.duration);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Explode();
     }
 }

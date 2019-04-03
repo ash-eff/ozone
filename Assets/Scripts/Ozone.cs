@@ -7,6 +7,8 @@ public class Ozone : MonoBehaviour
 
     [SerializeField]
     private float speed;
+    [SerializeField]
+    private ParticleSystem ozoneLayer;
 
     GameController gc;
 
@@ -34,8 +36,18 @@ public class Ozone : MonoBehaviour
     {
         if(collision.transform.tag == "Debris")
         {
-            Destroy(collision.gameObject);
             gc.UpdateScore(1);
         }
+    }
+
+
+    public void StartOzoneLayer()
+    {
+        ozoneLayer.Play();
+    }
+
+    public void StopOzoneLayer()
+    {
+        ozoneLayer.Stop(false, ParticleSystemStopBehavior.StopEmitting);
     }
 }

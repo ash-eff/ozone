@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -10,15 +10,23 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI countdownText;
     public GameObject pausedPanel;
     public GameObject gameOverPanel;
+    public GameObject tint;
     public TextMeshProUGUI finalScoreText;
     public TextMeshProUGUI topScoreText;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI liveText;
+    public TextMeshProUGUI gameOverText;
 
     DebrisSpawner ds;
+    CameraShake camShake;
+    Ozone ozone;
 
     [SerializeField]
     private int maxPlayerLives;
+    [SerializeField]
+    private float cameraShakeDuration;
+    [SerializeField]
+    private float cameraShakeAmount;
 
     private bool gameStarted;
     private bool gameOver;
@@ -39,6 +47,8 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
+        ozone = FindObjectOfType<Ozone>();
+        camShake = FindObjectOfType<CameraShake>();
         ds = FindObjectOfType<DebrisSpawner>();
         if (!PlayerPrefs.HasKey("TopScore"))
         {
@@ -67,18 +77,22 @@ public class GameController : MonoBehaviour
 
         while(sec > 0)
         {
-            countdownText.text = "3";
+            countdownText.alignment = TextAlignmentOptions.Top;
+            countdownText.text = "three";
             yield return new WaitForSeconds(1);
             sec--;
 
-            countdownText.text = "2";
+            countdownText.alignment = TextAlignmentOptions.Midline;
+            countdownText.text = "two";
             yield return new WaitForSeconds(1);
             sec--;
 
-            countdownText.text = "1";
+            countdownText.alignment = TextAlignmentOptions.Bottom;
+            countdownText.text = "one";
             yield return new WaitForSeconds(1);
             sec--;
 
+            countdownText.alignment = TextAlignmentOptions.Midline;
             countdownText.text = "GO!";
             yield return new WaitForSeconds(1);
             sec--;
@@ -86,12 +100,15 @@ public class GameController : MonoBehaviour
 
         countdownPanel.SetActive(false);
         gameStarted = true;
+        ozone.StartOzoneLayer();
         ds.StartDebrisSpawner();
+        scoreText.gameObject.SetActive(true);
+        liveText.gameObject.SetActive(true);
     }
 
     void MainMenu()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && !gameOver)
         {
             paused = !paused;
         }
@@ -115,7 +132,8 @@ public class GameController : MonoBehaviour
 
     public void UpdateLives(int i)
     {
-        Debug.Log("Hit by debris");
+        StartCoroutine(camShake.Shake(cameraShakeDuration, cameraShakeAmount));
+        StartCoroutine(ScreenTint(cameraShakeDuration));
         playerLives -= i;
         if(playerLives <= 0)
         {
@@ -123,23 +141,46 @@ public class GameController : MonoBehaviour
         }
     }
 
+    IEnumerator ScreenTint(float _duration)
+    {
+        float elapsed = 0.0f;
+
+        while (elapsed < _duration)
+        {
+            tint.SetActive(true);
+
+            elapsed += Time.deltaTime;
+
+            yield return null;
+        }
+
+        tint.SetActive(false);
+    }
+
     void GameOver()
     {
         gameOver = true;
+        tint.SetActive(true);
+        gameOverText.text = "Game\nOver";
+        scoreText.gameObject.SetActive(false);
+        liveText.gameObject.SetActive(false);
         if (playerScore > PlayerPrefs.GetInt("TopScore"))
         {
             PlayerPrefs.SetInt("TopScore", playerScore);
         }
 
-        finalScoreText.text = "Your Score: " + playerScore.ToString();
-        topScoreText.text = "Your Top Score: " + PlayerPrefs.GetInt("TopScore").ToString();
+        finalScoreText.text = "Final Score: " + playerScore.ToString();
+        topScoreText.text = "Top Score: " + PlayerPrefs.GetInt("TopScore").ToString();
 
         gameOverPanel.SetActive(true);
+        ozone.StopOzoneLayer();
     }
 
     public void PlayAgain()
     {
+        tint.SetActive(false);
         gameOverPanel.SetActive(false);
+        gameOverText.text = "";
         liveText.text = "Lives: 3";
         scoreText.text = "0000";
         playerLives = maxPlayerLives;
@@ -147,5 +188,10 @@ public class GameController : MonoBehaviour
         gameOver = false;
         gameStarted = false;
         StartCoroutine(GameStartCountDown());
+    }
+
+    public void QuitGame()
+    {
+        SceneManager.LoadScene(0);
     }
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Earth : MonoBehaviour
 {
-
     GameController gc;
 
     // Start is called before the first frame update
@@ -17,7 +16,6 @@ public class Earth : MonoBehaviour
     {
         if (collision.transform.tag == "Debris")
         {
-            Destroy(collision.gameObject);
             gc.UpdateLives(1);
         }
     }
