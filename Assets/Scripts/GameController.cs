@@ -15,6 +15,8 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI liveText;
 
+    DebrisSpawner ds;
+
     [SerializeField]
     private int maxPlayerLives;
 
@@ -25,8 +27,19 @@ public class GameController : MonoBehaviour
     private int playerLives;
     private int playerScore;
 
+    public bool GameStarted
+    {
+        get { return gameStarted; }
+    }
+
+    public bool GetGameOver
+    {
+        get { return gameOver; }
+    }
+
     private void Start()
     {
+        ds = FindObjectOfType<DebrisSpawner>();
         if (!PlayerPrefs.HasKey("TopScore"))
         {
             PlayerPrefs.SetInt("TopScore", 0);
@@ -73,6 +86,7 @@ public class GameController : MonoBehaviour
 
         countdownPanel.SetActive(false);
         gameStarted = true;
+        ds.StartDebrisSpawner();
     }
 
     void MainMenu()
@@ -117,8 +131,8 @@ public class GameController : MonoBehaviour
             PlayerPrefs.SetInt("TopScore", playerScore);
         }
 
-        finalScoreText.text = playerScore.ToString();
-        topScoreText.text = PlayerPrefs.GetInt("TopScore").ToString();
+        finalScoreText.text = "Your Score: " + playerScore.ToString();
+        topScoreText.text = "Your Top Score: " + PlayerPrefs.GetInt("TopScore").ToString();
 
         gameOverPanel.SetActive(true);
     }
@@ -126,6 +140,8 @@ public class GameController : MonoBehaviour
     public void PlayAgain()
     {
         gameOverPanel.SetActive(false);
+        liveText.text = "Lives: 3";
+        scoreText.text = "0000";
         playerLives = maxPlayerLives;
         playerScore = 0;
         gameOver = false;

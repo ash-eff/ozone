@@ -17,6 +17,7 @@ public class Earth : MonoBehaviour
     {
         if (collision.transform.tag == "Debris")
         {
+            Destroy(collision.gameObject);
             gc.UpdateLives(1);
         }
     }

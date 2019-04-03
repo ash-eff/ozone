@@ -49,4 +49,6 @@ MonoBehaviour:
   gameOverPanel: {fileID: 0}
   finalScoreText: {fileID: 0}
   topScoreText: {fileID: 0}
-  maxPlayerLives: 0
+  scoreText: {fileID: 0}
+  liveText: {fileID: 0}
+  maxPlayerLives: 3
