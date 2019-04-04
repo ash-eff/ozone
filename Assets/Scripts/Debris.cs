@@ -16,6 +16,13 @@ public class Debris : MonoBehaviour
     private ParticleSystem debrisParticle;
     [SerializeField]
     private ParticleSystem explode;
+    //[SerializeField]
+    //private AudioClip explosionEarth;
+    //[SerializeField]
+    //private AudioClip explosionOzone;
+
+    //AudioSource audioSource;
+
     private float speed;
     private float arc;
     private bool canMove;
@@ -26,6 +33,7 @@ public class Debris : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //audioSource = GetComponent<AudioSource>();
         canMove = true;
         speed = Random.Range(minSpeed, maxSpeed);
         arc = Random.Range(minArc, maxArc);
@@ -58,6 +66,15 @@ public class Debris : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        //if(collision.gameObject.tag == "Ozone")
+        //{
+        //    audioSource.PlayOneShot(explosionOzone);
+        //}
+        //if (collision.gameObject.tag == "Earth")
+        //{
+        //    audioSource.PlayOneShot(explosionEarth);
+        //}
+
         Explode();
     }
 }

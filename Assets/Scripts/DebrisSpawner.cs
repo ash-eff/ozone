@@ -41,7 +41,6 @@ public class DebrisSpawner : MonoBehaviour
             if (time > 0.25f)
             {
                 time -= Time.deltaTime / 3;
-                Debug.Log(time);
             }
             Vector2 newAxis = GetRandomAxis(screenWidth, screenHeight);
             Instantiate(debrisPrefab, newAxis, Quaternion.identity);

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 
@@ -17,6 +18,8 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI gameOverText;
     public Color scoreColor;
     public Color resetColor;
+    public Slider musicSlider;
+    public Slider soundSlider;
 
     DebrisSpawner ds;
     CameraShake camShake;
@@ -28,6 +31,23 @@ public class GameController : MonoBehaviour
     private float cameraShakeDuration;
     [SerializeField]
     private float cameraShakeAmount;
+    [SerializeField]
+    private AudioClip countShort;
+    [SerializeField]
+    private AudioClip countLong;
+    [SerializeField]
+    private AudioClip explosionEarth;
+    [SerializeField]
+    private AudioClip explosionOzone;
+    [SerializeField]
+    private AudioClip powerUp;
+    [SerializeField]
+    private AudioClip powerDown;
+
+    [SerializeField]
+    AudioSource audioSource;
+    [SerializeField]
+    AudioSource musicSource;
 
     private bool gameStarted;
     private bool gameOver;
@@ -55,6 +75,21 @@ public class GameController : MonoBehaviour
         {
             PlayerPrefs.SetInt("TopScore", 0);
         }
+
+        if (!PlayerPrefs.HasKey("MusicVol"))
+        {
+            PlayerPrefs.SetFloat("MusicVol", 1f);
+        }
+
+        if (!PlayerPrefs.HasKey("FXVol"))
+        {
+            PlayerPrefs.SetFloat("FXVol", 1f);
+        }
+
+        musicSlider.value = PlayerPrefs.GetFloat("MusicVol");
+        soundSlider.value = PlayerPrefs.GetFloat("FXVol");
+        musicSource.volume = musicSlider.value;
+        audioSource.volume = soundSlider.value / 2;
         StartCoroutine(GameStartCountDown());
         playerLives = maxPlayerLives;
     }
@@ -80,21 +115,25 @@ public class GameController : MonoBehaviour
         {
             //countdownText.alignment = TextAlignmentOptions.Top;
             countdownText.text = "three";
+            audioSource.PlayOneShot(countShort);
             yield return new WaitForSeconds(1);
             sec--;
 
             //countdownText.alignment = TextAlignmentOptions.Midline;
             countdownText.text = "two";
+            audioSource.PlayOneShot(countShort);
             yield return new WaitForSeconds(1);
             sec--;
 
             //countdownText.alignment = TextAlignmentOptions.Bottom;
             countdownText.text = "one";
+            audioSource.PlayOneShot(countShort);
             yield return new WaitForSeconds(1);
             sec--;
 
             //countdownText.alignment = TextAlignmentOptions.Midline;
             countdownText.text = "GO!";
+            audioSource.PlayOneShot(countLong);
             yield return new WaitForSeconds(1);
             sec--;
         }
@@ -102,9 +141,13 @@ public class GameController : MonoBehaviour
         countdownText.gameObject.SetActive(false);
         gameStarted = true;
         ozone.StartOzoneLayer();
+        audioSource.PlayOneShot(powerUp);
         StartCoroutine(ds.SpawnDebris());
         scoreText.gameObject.SetActive(true);
-
+        if (!musicSource.isPlaying)
+        {
+            musicSource.Play();
+        }
         StartCoroutine(ScoreAlpha());
     }
 
@@ -144,16 +187,23 @@ public class GameController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && !gameOver)
         {
             paused = !paused;
+            PlayerPrefs.SetFloat("MusicVol", musicSlider.value);
+            PlayerPrefs.SetFloat("FXVol", soundSlider.value);
         }
 
         if (paused)
         {
             Time.timeScale = 0;
+            liveText.gameObject.SetActive(false);
             pausedPanel.SetActive(true);
+            Debug.Log(musicSlider.value);
+            musicSource.volume = musicSlider.value;
+            audioSource.volume = soundSlider.value / 2;
         }
         else
         {
             Time.timeScale = 1;
+            liveText.gameObject.SetActive(true);
             pausedPanel.SetActive(false);
         }
     }
@@ -176,15 +226,18 @@ public class GameController : MonoBehaviour
 
         gameOverPanel.SetActive(true);
         ozone.StopOzoneLayer();
+        audioSource.PlayOneShot(powerDown);
     }
 
     public void UpdateScore(int i)
     {
+        audioSource.PlayOneShot(explosionOzone);
         playerScore += i;
     }
 
     public void UpdateLives(int i)
     {
+        audioSource.PlayOneShot(explosionEarth);
         StartCoroutine(camShake.Shake(cameraShakeDuration, cameraShakeAmount));
         StartCoroutine(ScreenTint(cameraShakeDuration));
         playerLives -= i;
