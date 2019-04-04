@@ -133,8 +133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac005927525c1a48a8476b0c344ef39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minSpeed: 6
-  maxSpeed: 12
+  minSpeed: 12
+  maxSpeed: 18
   minArc: 15
   maxArc: 25
   debrisParticle: {fileID: 3375899212694161345}

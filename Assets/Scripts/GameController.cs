@@ -6,16 +6,17 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
-    public GameObject countdownPanel;
-    public TextMeshProUGUI countdownText;
     public GameObject pausedPanel;
     public GameObject gameOverPanel;
     public GameObject tint;
+    public TextMeshProUGUI countdownText;
     public TextMeshProUGUI finalScoreText;
     public TextMeshProUGUI topScoreText;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI liveText;
     public TextMeshProUGUI gameOverText;
+    public Color scoreColor;
+    public Color resetColor;
 
     DebrisSpawner ds;
     CameraShake camShake;
@@ -73,36 +74,68 @@ public class GameController : MonoBehaviour
     IEnumerator GameStartCountDown()
     {
         int sec = 4;
-        countdownPanel.SetActive(true);
+        countdownText.gameObject.SetActive(true);
 
         while(sec > 0)
         {
-            countdownText.alignment = TextAlignmentOptions.Top;
+            //countdownText.alignment = TextAlignmentOptions.Top;
             countdownText.text = "three";
             yield return new WaitForSeconds(1);
             sec--;
 
-            countdownText.alignment = TextAlignmentOptions.Midline;
+            //countdownText.alignment = TextAlignmentOptions.Midline;
             countdownText.text = "two";
             yield return new WaitForSeconds(1);
             sec--;
 
-            countdownText.alignment = TextAlignmentOptions.Bottom;
+            //countdownText.alignment = TextAlignmentOptions.Bottom;
             countdownText.text = "one";
             yield return new WaitForSeconds(1);
             sec--;
 
-            countdownText.alignment = TextAlignmentOptions.Midline;
+            //countdownText.alignment = TextAlignmentOptions.Midline;
             countdownText.text = "GO!";
             yield return new WaitForSeconds(1);
             sec--;
         }
 
-        countdownPanel.SetActive(false);
+        countdownText.gameObject.SetActive(false);
         gameStarted = true;
         ozone.StartOzoneLayer();
-        ds.StartDebrisSpawner();
+        StartCoroutine(ds.SpawnDebris());
         scoreText.gameObject.SetActive(true);
+
+        StartCoroutine(ScoreAlpha());
+    }
+
+    IEnumerator ScreenTint(float _duration)
+    {
+        float elapsed = 0.0f;
+
+        while (elapsed < _duration)
+        {
+            tint.SetActive(true);
+
+            elapsed += Time.deltaTime;
+
+            yield return null;
+        }
+
+        tint.SetActive(false);
+    }
+
+    IEnumerator ScoreAlpha()
+    {
+        float currentLerpTime = 0;
+        while (currentLerpTime < 1)
+        {
+            currentLerpTime += Time.deltaTime;
+
+            float perc = currentLerpTime / 10f;
+            scoreText.color = Color.Lerp(scoreText.color, scoreColor, perc);
+            yield return null;
+        }
+
         liveText.gameObject.SetActive(true);
     }
 
@@ -125,6 +158,26 @@ public class GameController : MonoBehaviour
         }
     }
 
+    void GameOver()
+    {
+        gameOver = true;
+        tint.SetActive(true);
+        gameOverText.text = "Game\nOver";
+        scoreText.color = resetColor;
+        scoreText.gameObject.SetActive(false);
+        liveText.gameObject.SetActive(false);
+        if (playerScore > PlayerPrefs.GetInt("TopScore"))
+        {
+            PlayerPrefs.SetInt("TopScore", playerScore);
+        }
+
+        finalScoreText.text = "Final Score: " + playerScore.ToString();
+        topScoreText.text = "Top Score: " + PlayerPrefs.GetInt("TopScore").ToString();
+
+        gameOverPanel.SetActive(true);
+        ozone.StopOzoneLayer();
+    }
+
     public void UpdateScore(int i)
     {
         playerScore += i;
@@ -139,41 +192,6 @@ public class GameController : MonoBehaviour
         {
             GameOver();
         }
-    }
-
-    IEnumerator ScreenTint(float _duration)
-    {
-        float elapsed = 0.0f;
-
-        while (elapsed < _duration)
-        {
-            tint.SetActive(true);
-
-            elapsed += Time.deltaTime;
-
-            yield return null;
-        }
-
-        tint.SetActive(false);
-    }
-
-    void GameOver()
-    {
-        gameOver = true;
-        tint.SetActive(true);
-        gameOverText.text = "Game\nOver";
-        scoreText.gameObject.SetActive(false);
-        liveText.gameObject.SetActive(false);
-        if (playerScore > PlayerPrefs.GetInt("TopScore"))
-        {
-            PlayerPrefs.SetInt("TopScore", playerScore);
-        }
-
-        finalScoreText.text = "Final Score: " + playerScore.ToString();
-        topScoreText.text = "Top Score: " + PlayerPrefs.GetInt("TopScore").ToString();
-
-        gameOverPanel.SetActive(true);
-        ozone.StopOzoneLayer();
     }
 
     public void PlayAgain()

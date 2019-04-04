@@ -6,9 +6,9 @@ public class DebrisSpawner : MonoBehaviour
 {
 
     public GameObject debrisPrefab;
-
     private float screenHeight;
     private float screenWidth;
+
     GameController gc;
 
     private void Start()
@@ -32,31 +32,55 @@ public class DebrisSpawner : MonoBehaviour
         }
     }
 
-    public void StartDebrisSpawner()
+    public IEnumerator SpawnDebris()
     {
-        StartCoroutine(SpawnDebris());
-    }
-
-    IEnumerator SpawnDebris()
-    {
+        float time = 1.2f;
         while (!gc.GetGameOver)
         {
-            float xAxis = GetRandomAxis(screenWidth);
-            float yAxis = GetRandomAxis(screenHeight);
 
-            Instantiate(debrisPrefab, new Vector2(xAxis, yAxis), Quaternion.identity);
-            yield return new WaitForSeconds(0.4f);
+            if (time > 0.25f)
+            {
+                time -= Time.deltaTime / 3;
+                Debug.Log(time);
+            }
+            Vector2 newAxis = GetRandomAxis(screenWidth, screenHeight);
+            Instantiate(debrisPrefab, newAxis, Quaternion.identity);
+            yield return new WaitForSeconds(time);
         }
     }
 
-    float GetRandomAxis(float dimension)
+    Vector2 GetRandomAxis(float _width, float _height)
     {
-        float rand = Random.Range(dimension + 1, dimension + 2);
-        if (Random.Range(0, 100) <= 50)
+        float quarterChance = Random.value;
+        float x = _width;
+        float y = _height;
+
+        // up
+        if (quarterChance > .75f)
         {
-            rand = rand * -1f;
+            x = Random.Range(-_width, _width);
+            y = _height;
+        }
+        // down
+        else if (quarterChance > .5f)
+        {
+            x = Random.Range(-_width, _width);
+            y = -_height;
+        }
+        // right
+        else if (quarterChance > .25f)
+        {
+            x = _width;
+            y = Random.Range(-_height, _height);
+        }
+        // left
+        else if (quarterChance > 0)
+        {
+            x = -_width;
+            y = Random.Range(-_height, _height);
         }
 
-        return rand;
+        Vector2 newAxis = new Vector2(x, y);
+        return newAxis;
     }
 }
